@@ -7,18 +7,9 @@ sealed class CatalogEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class CatalogCategoriesFetched extends CatalogEvent {
-  const CatalogCategoriesFetched();
+class CatalogFetched extends CatalogEvent {
+  const CatalogFetched();
 
   @override
   List<Object> get props => [];
-}
-
-class CatalogProductsFetched extends CatalogEvent {
-  const CatalogProductsFetched({required this.categoryId});
-
-  final String categoryId;
-
-  @override
-  List<Object> get props => [categoryId];
 }

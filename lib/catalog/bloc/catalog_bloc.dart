@@ -9,28 +9,54 @@ part 'catalog_event.dart';
 part 'catalog_state.dart';
 
 class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
-  CatalogBloc(this._firestore) : super(CatalogState(categories: List.empty())) {
-    on<CatalogCategoriesFetched>(_categoriesFetched);
+  CatalogBloc(this._firestore)
+      : super(
+          CatalogState(
+            categories: List.empty(),
+            products: List.empty(),
+            categorySelected: Category(name: 'all'),
+          ),
+        ) {
+    on<CatalogFetched>(_categoriesFetched);
   }
 
   final FirebaseFirestore _firestore;
 
   FutureOr<void> _categoriesFetched(
-    CatalogCategoriesFetched event,
+    CatalogFetched event,
     Emitter<CatalogState> emit,
   ) async {
+    emit(state.copyWith(catalogStatus: CatalogStatus.loading));
     final categoriesSnapshot =
         _firestore.collection('categories').withConverter<Category>(
               fromFirestore: (snapshot, options) =>
                   Category.fromMap(snapshot.data() ?? {}),
               toFirestore: (value, options) => value.toMap(),
             );
-    await emit.forEach(
-      categoriesSnapshot.snapshots(),
-      onData: (data) {
-        final categories = data.docs.map((e) => e.data()).toList();
-        return state.copyWith(categories: categories);
-      },
-    );
+    final productsSnapshot =
+        _firestore.collection('products').withConverter<Product>(
+              fromFirestore: (snapshot, options) =>
+                  Product.fromMap(snapshot.data() ?? {}),
+              toFirestore: (value, options) => value.toMap(),
+            );
+    await Future.wait([
+      emit.forEach(
+        categoriesSnapshot.snapshots(),
+        onData: (data) {
+          final categories = data.docs.map((e) => e.data()).toList();
+          return state.copyWith(categories: categories);
+        },
+      ),
+      emit.forEach(
+        productsSnapshot.snapshots(),
+        onData: (data) {
+          final products = data.docs.map((e) => e.data()).toList();
+          return state.copyWith(
+            products: products,
+            catalogStatus: CatalogStatus.success,
+          );
+        },
+      ),
+    ]);
   }
 }
