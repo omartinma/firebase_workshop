@@ -1,4 +1,4 @@
-package com.example.verygoodcore.firebase_workshop
+package com.example.firebase_workshop
 
 import io.flutter.embedding.android.FlutterActivity
 

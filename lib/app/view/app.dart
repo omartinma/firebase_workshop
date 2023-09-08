@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_workshop/counter/counter.dart';
 import 'package:firebase_workshop/l10n/l10n.dart';
+import 'package:firebase_workshop/login/login.dart';
+import 'package:flutter/material.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -16,7 +16,7 @@ class App extends StatelessWidget {
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: const CounterPage(),
+      home: const LoginPage(),
     );
   }
 }
