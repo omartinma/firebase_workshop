@@ -12,11 +12,13 @@ class CatalogState extends Equatable {
     required this.categorySelected,
     required this.products,
     this.catalogStatus = CatalogStatus.initial,
+    this.lastTimeFetched,
   });
   final CatalogStatus catalogStatus;
   final List<Category> categories;
   final Category categorySelected;
   final List<Product> products;
+  final DateTime? lastTimeFetched;
 
   List<Product> get productsFiltered {
     if (categorySelected.name == 'all') return products;
@@ -38,12 +40,14 @@ class CatalogState extends Equatable {
     List<Category>? categories,
     Category? categorySelected,
     List<Product>? products,
+    DateTime? lastTimeFetched,
   }) {
     return CatalogState(
       catalogStatus: catalogStatus ?? this.catalogStatus,
       categories: categories ?? this.categories,
       categorySelected: categorySelected ?? this.categorySelected,
       products: products ?? this.products,
+      lastTimeFetched: lastTimeFetched ?? this.lastTimeFetched,
     );
   }
 }

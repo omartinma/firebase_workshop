@@ -18,6 +18,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
           ),
         ) {
     on<CatalogFetched>(_categoriesFetched);
+    on<CatalogCategorySelected>(_categorySelected);
   }
 
   final FirebaseFirestore _firestore;
@@ -27,36 +28,48 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     Emitter<CatalogState> emit,
   ) async {
     emit(state.copyWith(catalogStatus: CatalogStatus.loading));
-    final categoriesSnapshot =
+    final categoriesRef =
         _firestore.collection('categories').withConverter<Category>(
               fromFirestore: (snapshot, options) =>
                   Category.fromMap(snapshot.data() ?? {}),
               toFirestore: (value, options) => value.toMap(),
             );
-    final productsSnapshot =
+    final productsRef =
         _firestore.collection('products').withConverter<Product>(
               fromFirestore: (snapshot, options) =>
                   Product.fromMap(snapshot.data() ?? {}),
               toFirestore: (value, options) => value.toMap(),
             );
-    await Future.wait([
-      emit.forEach(
-        categoriesSnapshot.snapshots(),
-        onData: (data) {
-          final categories = data.docs.map((e) => e.data()).toList();
-          return state.copyWith(categories: categories);
-        },
+    final lastTimeDataFetched = state.lastTimeFetched ?? DateTime(1);
+    final now = DateTime.now();
+    final difference = now.difference(lastTimeDataFetched).inDays;
+    QuerySnapshot<Category> categoriesSnapshot;
+    QuerySnapshot<Product> productSnapshot;
+    if (difference >= 1) {
+      categoriesSnapshot = await categoriesRef.get();
+      productSnapshot = await productsRef.get();
+    } else {
+      categoriesSnapshot =
+          await categoriesRef.get(const GetOptions(source: Source.cache));
+      productSnapshot =
+          await productsRef.get(const GetOptions(source: Source.cache));
+    }
+    final categories = categoriesSnapshot.docs.map((e) => e.data()).toList();
+    final products = productSnapshot.docs.map((e) => e.data()).toList();
+
+    emit(
+      state.copyWith(
+        categories: categories,
+        products: products,
+        catalogStatus: CatalogStatus.success,
       ),
-      emit.forEach(
-        productsSnapshot.snapshots(),
-        onData: (data) {
-          final products = data.docs.map((e) => e.data()).toList();
-          return state.copyWith(
-            products: products,
-            catalogStatus: CatalogStatus.success,
-          );
-        },
-      ),
-    ]);
+    );
+  }
+
+  FutureOr<void> _categorySelected(
+    CatalogCategorySelected event,
+    Emitter<CatalogState> emit,
+  ) {
+    emit(state.copyWith(categorySelected: event.category));
   }
 }

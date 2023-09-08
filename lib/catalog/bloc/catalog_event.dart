@@ -13,3 +13,12 @@ class CatalogFetched extends CatalogEvent {
   @override
   List<Object> get props => [];
 }
+
+class CatalogCategorySelected extends CatalogEvent {
+  const CatalogCategorySelected({required this.category});
+
+  final Category category;
+
+  @override
+  List<Object> get props => [category];
+}

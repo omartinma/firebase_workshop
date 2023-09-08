@@ -65,10 +65,15 @@ class CategoriesFilter extends StatelessWidget {
       child: ListView.builder(
         itemCount: categories.length,
         itemBuilder: (context, index) {
+          final category = categories[index];
           return Padding(
             padding: const EdgeInsets.all(8),
             child: InkWell(
-              onTap: () {},
+              onTap: () {
+                context
+                    .read<CatalogBloc>()
+                    .add(CatalogCategorySelected(category: category));
+              },
               child: Container(
                 height: 30,
                 width: 100,
@@ -80,7 +85,7 @@ class CategoriesFilter extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   child: Center(
                     child: Text(
-                      categories[index].name,
+                      category.name,
                       style: Theme.of(context).textTheme.titleSmall,
                     ),
                   ),
