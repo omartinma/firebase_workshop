@@ -16,7 +16,9 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
   final FirebaseFirestore _firestore;
 
   FutureOr<void> _categoriesFetched(
-      CatalogCategoriesFetched event, Emitter<CatalogState> emit) async {
+    CatalogCategoriesFetched event,
+    Emitter<CatalogState> emit,
+  ) async {
     final categoriesSnapshot =
         _firestore.collection('categories').withConverter<Category>(
               fromFirestore: (snapshot, options) =>
