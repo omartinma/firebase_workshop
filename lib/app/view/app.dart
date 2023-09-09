@@ -9,10 +9,14 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primaryColor: Colors.amber,
-        appBarTheme: AppBarTheme(color: Colors.brown),
+        appBarTheme: const AppBarTheme(color: Colors.brown),
+        textTheme: Theme.of(context).textTheme.apply(
+              bodyColor: Colors.white,
+            ),
         colorScheme: ColorScheme.fromSwatch(
-            accentColor: Colors.green, primarySwatch: Colors.brown),
+          accentColor: Colors.green,
+          primarySwatch: Colors.brown,
+        ),
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,

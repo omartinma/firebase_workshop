@@ -45,11 +45,15 @@ class CatalogView extends StatelessWidget {
             return const CircularProgressIndicator();
           }
           final categories = state.categories;
+          final categorySelected = state.categorySelected;
           final productFiltered = state.productsFiltered;
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
-                child: CategoriesFilter(categories: categories),
+                child: CategoriesFilter(
+                  categories: categories,
+                  categorySelected: categorySelected,
+                ),
               ),
               ProductsView(products: productFiltered),
             ],
@@ -61,12 +65,18 @@ class CatalogView extends StatelessWidget {
 }
 
 class CategoriesFilter extends StatelessWidget {
-  const CategoriesFilter({required this.categories, super.key});
+  const CategoriesFilter({
+    required this.categories,
+    required this.categorySelected,
+    super.key,
+  });
 
   final List<Category> categories;
+  final Category categorySelected;
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).colorScheme.primary;
     return SizedBox(
       height: 60,
       width: double.infinity,
@@ -85,9 +95,15 @@ class CategoriesFilter extends StatelessWidget {
               child: Container(
                 height: 30,
                 width: 100,
-                decoration: const BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
+                  border: Border.all(
+                    color: category == categorySelected
+                        ? Colors.amber
+                        : primaryColor,
+                    width: 3,
+                  ),
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(8),
