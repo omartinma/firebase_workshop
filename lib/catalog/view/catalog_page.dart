@@ -42,7 +42,7 @@ class CatalogView extends StatelessWidget {
         builder: (context, state) {
           if (state.catalogStatus == CatalogStatus.initial ||
               state.catalogStatus == CatalogStatus.loading) {
-            return const CircularProgressIndicator();
+            return const Center(child: CircularProgressIndicator());
           }
           final categories = state.categories;
           final categorySelected = state.categorySelected;
@@ -55,7 +55,18 @@ class CatalogView extends StatelessWidget {
                   categorySelected: categorySelected,
                 ),
               ),
-              ProductsView(products: productFiltered),
+              if (productFiltered.isNotEmpty)
+                ProductsView(products: productFiltered)
+              else
+                const SliverToBoxAdapter(
+                  child: Text(
+                    'Sorry no data for this category',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
             ],
           );
         },

@@ -17,13 +17,13 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
             categorySelected: Category(name: 'all'),
           ),
         ) {
-    on<CatalogFetched>(_categoriesFetched);
+    on<CatalogFetched>(_fetched);
     on<CatalogCategorySelected>(_categorySelected);
   }
 
   final FirebaseFirestore _firestore;
 
-  FutureOr<void> _categoriesFetched(
+  FutureOr<void> _fetched(
     CatalogFetched event,
     Emitter<CatalogState> emit,
   ) async {
@@ -46,9 +46,11 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     QuerySnapshot<Category> categoriesSnapshot;
     QuerySnapshot<Product> productSnapshot;
     if (difference >= 1) {
+      // Never fetched before -> we fetch from the server
       categoriesSnapshot = await categoriesRef.get();
       productSnapshot = await productsRef.get();
     } else {
+      // Fetched less than a day ago -> we fetch from cache
       categoriesSnapshot =
           await categoriesRef.get(const GetOptions(source: Source.cache));
       productSnapshot =
