@@ -29,6 +29,14 @@ class CatalogView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Wine Shop'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              context.read<CatalogBloc>().add(const CatalogFetched());
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
       body: BlocBuilder<CatalogBloc, CatalogState>(
         builder: (context, state) {

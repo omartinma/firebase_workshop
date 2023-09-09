@@ -62,6 +62,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         categories: categories,
         products: products,
         catalogStatus: CatalogStatus.success,
+        lastTimeFetched: now,
       ),
     );
   }

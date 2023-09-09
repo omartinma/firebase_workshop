@@ -28,11 +28,12 @@ class CatalogState extends Equatable {
   }
 
   @override
-  List<Object> get props => [
+  List<Object?> get props => [
         catalogStatus,
         categories,
         categorySelected,
         products,
+        lastTimeFetched,
       ];
 
   CatalogState copyWith({
