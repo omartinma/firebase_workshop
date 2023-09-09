@@ -14,7 +14,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
           CatalogState(
             categories: List.empty(),
             products: List.empty(),
-            categorySelected: Category(name: 'all'),
+            categorySelected: const Category(name: 'all'),
           ),
         ) {
     on<CatalogFetched>(_fetched);

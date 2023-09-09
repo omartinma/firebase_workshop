@@ -33,9 +33,13 @@ class LoginView extends StatelessWidget {
         ),
         body: Column(
           children: [
-            Image.asset(
-              'assets/images/cellar.jpg',
-              width: double.infinity,
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.4,
+              child: Image.asset(
+                'assets/images/cellar.jpg',
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(height: 60),
             Container(

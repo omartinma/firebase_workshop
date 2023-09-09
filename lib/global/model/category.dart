@@ -1,7 +1,9 @@
 import 'dart:convert';
 
-class Category {
-  Category({
+import 'package:equatable/equatable.dart';
+
+class Category extends Equatable {
+  const Category({
     required this.name,
   });
 
@@ -22,4 +24,7 @@ class Category {
   }
 
   String toJson() => json.encode(toMap());
+
+  @override
+  List<Object?> get props => [name];
 }
