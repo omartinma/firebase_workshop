@@ -146,12 +146,34 @@ class ProductsView extends StatelessWidget {
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
-        return Container(
-          color: Colors.blue,
-          alignment: Alignment.center,
-          width: 100,
-          height: 100,
-          child: Text(product.name),
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.grey.shade500,
+            ),
+            height: 100,
+            child: Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      product.image,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    children: [Text(product.name)],
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

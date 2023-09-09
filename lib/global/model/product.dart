@@ -4,6 +4,7 @@ class Product {
   Product({
     required this.name,
     required this.categoryName,
+    required this.image,
   });
 
   factory Product.fromJson(String source) =>
@@ -12,16 +13,19 @@ class Product {
     return Product(
       name: map['name'] as String,
       categoryName: map['categoryName'] as String,
+      image: map['image'] as String,
     );
   }
 
   final String name;
   final String categoryName;
+  final String image;
 
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'categoryName': categoryName,
+      'image': image,
     };
   }
 
