@@ -28,13 +28,27 @@ class LoginView extends StatelessWidget {
         }
       },
       child: Scaffold(
-        body: Center(
-          child: ElevatedButton(
-            onPressed: () {
-              context.read<LoginBloc>().add(const LoginRequested());
-            },
-            child: const Text('Login'),
-          ),
+        appBar: AppBar(
+          title: const Text('Welcome to my wine shop'),
+        ),
+        body: Column(
+          children: [
+            Image.asset(
+              'assets/images/cellar.jpg',
+              width: double.infinity,
+            ),
+            const SizedBox(height: 60),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ElevatedButton(
+                onPressed: () {
+                  context.read<LoginBloc>().add(const LoginRequested());
+                },
+                child: const Text('Sign In'),
+              ),
+            ),
+          ],
         ),
       ),
     );
