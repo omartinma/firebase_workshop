@@ -142,6 +142,7 @@ class ProductsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return SliverList.builder(
       itemCount: products.length,
       itemBuilder: (context, index) {
@@ -168,7 +169,16 @@ class ProductsView extends StatelessWidget {
                 ),
                 Expanded(
                   child: Column(
-                    children: [Text(product.name)],
+                    children: [
+                      Text(
+                        product.name,
+                        style: textTheme.headlineSmall,
+                      ),
+                      Text(
+                        product.description,
+                        style: textTheme.bodyMedium,
+                      ),
+                    ],
                   ),
                 ),
               ],

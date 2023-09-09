@@ -7,6 +7,7 @@ class Product extends Equatable {
     required this.name,
     required this.categoryName,
     required this.image,
+    required this.description,
   });
 
   factory Product.fromJson(String source) =>
@@ -16,23 +17,26 @@ class Product extends Equatable {
       name: map['name'] as String,
       categoryName: map['categoryName'] as String,
       image: map['image'] as String,
+      description: map['description'] as String,
     );
   }
 
   final String name;
   final String categoryName;
   final String image;
+  final String description;
 
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'categoryName': categoryName,
       'image': image,
+      'description': description,
     };
   }
 
   String toJson() => json.encode(toMap());
 
   @override
-  List<Object?> get props => [name, categoryName, image];
+  List<Object?> get props => [name, categoryName, image, description];
 }
