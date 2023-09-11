@@ -7,6 +7,8 @@ class Category extends Equatable {
     required this.name,
   });
 
+  const Category.all() : this(name: 'all');
+
   factory Category.fromJson(String source) =>
       Category.fromMap(json.decode(source) as Map<String, dynamic>);
   factory Category.fromMap(Map<String, dynamic> map) {

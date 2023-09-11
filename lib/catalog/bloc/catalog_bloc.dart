@@ -14,7 +14,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
           CatalogState(
             categories: List.empty(),
             products: List.empty(),
-            categorySelected: const Category(name: 'all'),
+            categorySelected: const Category.all(),
           ),
         ) {
     on<CatalogFetched>(_fetched);
@@ -96,7 +96,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     final categoriesSnapshot = await categoriesRef.get();
     final categories = categoriesSnapshot.docs.map((e) => e.data()).toList();
     emit(state.copyWith(categories: categories));
-    add(const CatalogProductByCategoryFetched(category: Category(name: 'all')));
+    add(const CatalogProductByCategoryFetched(category: Category.all()));
   }
 
   FutureOr<void> _productByCategoryFetched(
