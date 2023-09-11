@@ -14,8 +14,11 @@ class CatalogPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) =>
-          CatalogBloc(FirebaseFirestore.instance)..add(const CatalogFetched()),
+      create: (context) => CatalogBloc(FirebaseFirestore.instance)
+        ..add(
+          //const CatalogFetched(),// 1- Fetching all at once
+          const CatalogCategoriesFetched(), // 2- Fetching by tab
+        ),
       child: const CatalogView(),
     );
   }
@@ -41,7 +44,7 @@ class CatalogView extends StatelessWidget {
       body: BlocBuilder<CatalogBloc, CatalogState>(
         builder: (context, state) {
           if (state.catalogStatus == CatalogStatus.initial ||
-              state.catalogStatus == CatalogStatus.loading) {
+              state.catalogStatus == CatalogStatus.loadingCategories) {
             return const Center(child: CircularProgressIndicator());
           }
           final categories = state.categories;
@@ -55,18 +58,29 @@ class CatalogView extends StatelessWidget {
                   categorySelected: categorySelected,
                 ),
               ),
-              if (productFiltered.isNotEmpty)
-                ProductsView(products: productFiltered)
-              else
-                const SliverToBoxAdapter(
-                  child: Text(
-                    'Sorry no data for this category',
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+              BlocBuilder<CatalogBloc, CatalogState>(
+                builder: (context, state) {
+                  if (state.catalogStatus == CatalogStatus.loadingProducts) {
+                    return const SliverToBoxAdapter(
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  } else if (productFiltered.isNotEmpty) {
+                    return ProductsView(products: productFiltered);
+                  } else {
+                    return const SliverToBoxAdapter(
+                      child: Text(
+                        'Sorry no data for this category',
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  }
+                },
+              ),
             ],
           );
         },
@@ -101,7 +115,12 @@ class CategoriesFilter extends StatelessWidget {
               onTap: () {
                 context
                     .read<CatalogBloc>()
-                    .add(CatalogCategorySelected(category: category));
+                    // .add(CatalogCategorySelected(category: category)); // 1- While fetching all at once
+                    .add(
+                      CatalogProductByCategoryFetched(
+                        category: category,
+                      ),
+                    ); // 2- While fetching by tab
               },
               child: Container(
                 height: 30,

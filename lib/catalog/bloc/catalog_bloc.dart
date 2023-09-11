@@ -19,27 +19,36 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         ) {
     on<CatalogFetched>(_fetched);
     on<CatalogCategorySelected>(_categorySelected);
+    on<CatalogCategoriesFetched>(_categoriesFetched);
+    on<CatalogProductByCategoryFetched>(_productByCategoryFetched);
   }
 
   final FirebaseFirestore _firestore;
 
+  CollectionReference<Category> _getCategoriesRef() {
+    return _firestore.collection('categories').withConverter<Category>(
+          fromFirestore: (snapshot, options) =>
+              Category.fromMap(snapshot.data() ?? {}),
+          toFirestore: (value, options) => value.toMap(),
+        );
+  }
+
+  CollectionReference<Product> _getProductsRef() {
+    return _firestore.collection('products').withConverter<Product>(
+          fromFirestore: (snapshot, options) =>
+              Product.fromMap(snapshot.data() ?? {}),
+          toFirestore: (value, options) => value.toMap(),
+        );
+  }
+
+// Example 1 fetching all at once
   FutureOr<void> _fetched(
     CatalogFetched event,
     Emitter<CatalogState> emit,
   ) async {
-    emit(state.copyWith(catalogStatus: CatalogStatus.loading));
-    final categoriesRef =
-        _firestore.collection('categories').withConverter<Category>(
-              fromFirestore: (snapshot, options) =>
-                  Category.fromMap(snapshot.data() ?? {}),
-              toFirestore: (value, options) => value.toMap(),
-            );
-    final productsRef =
-        _firestore.collection('products').withConverter<Product>(
-              fromFirestore: (snapshot, options) =>
-                  Product.fromMap(snapshot.data() ?? {}),
-              toFirestore: (value, options) => value.toMap(),
-            );
+    emit(state.copyWith(catalogStatus: CatalogStatus.loadingCategories));
+    final categoriesRef = _getCategoriesRef();
+    final productsRef = _getProductsRef();
     final lastTimeDataFetched = state.lastTimeFetched ?? DateTime(1);
     final now = DateTime.now();
     final difference = now.difference(lastTimeDataFetched).inDays;
@@ -74,5 +83,43 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     Emitter<CatalogState> emit,
   ) {
     emit(state.copyWith(categorySelected: event.category));
+  }
+
+  // Example 2 fetching products per category
+
+  FutureOr<void> _categoriesFetched(
+    CatalogCategoriesFetched event,
+    Emitter<CatalogState> emit,
+  ) async {
+    emit(state.copyWith(catalogStatus: CatalogStatus.loadingCategories));
+    final categoriesRef = _getCategoriesRef();
+    final categoriesSnapshot = await categoriesRef.get();
+    final categories = categoriesSnapshot.docs.map((e) => e.data()).toList();
+    emit(state.copyWith(categories: categories));
+    add(const CatalogProductByCategoryFetched(category: Category(name: 'all')));
+  }
+
+  FutureOr<void> _productByCategoryFetched(
+    CatalogProductByCategoryFetched event,
+    Emitter<CatalogState> emit,
+  ) async {
+    emit(state.copyWith(catalogStatus: CatalogStatus.loadingProducts));
+    final productsRef = _getProductsRef();
+    QuerySnapshot<Product> productSnapshot;
+    if (event.category.name == 'all') {
+      productSnapshot = await productsRef.get();
+    } else {
+      productSnapshot = await productsRef
+          .where('categoryName', isEqualTo: event.category.name)
+          .get();
+    }
+    final products = productSnapshot.docs.map((e) => e.data()).toList();
+    emit(
+      state.copyWith(
+        products: products,
+        catalogStatus: CatalogStatus.success,
+        categorySelected: event.category,
+      ),
+    );
   }
 }
