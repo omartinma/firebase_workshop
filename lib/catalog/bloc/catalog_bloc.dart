@@ -6,6 +6,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:firebase_workshop/global/global.dart';
+import 'package:http/http.dart' as http;
 
 part 'catalog_event.dart';
 part 'catalog_state.dart';
@@ -43,6 +44,22 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         );
   }
 
+  Future<bool> _loadBundle() async {
+    try {
+      final res = await http.get(
+        Uri.parse(
+          'https://us-central1-fir-workshop-8801d.cloudfunctions.net/ext-firestore-bundle-builder-serve/products',
+        ),
+      );
+      final task = _firestore.loadBundle(res.bodyBytes);
+      await task.stream.first;
+      print('bundle loaded');
+      return true;
+    } on Exception catch (_) {
+      return false;
+    }
+  }
+
   (bool, DateTime) _shouldLoadFromServer(Category category) {
     final lastTimeFetched = state.lastTimeFetched[category];
     final now = DateTime.now();
@@ -54,7 +71,25 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     CatalogProductByCategoryFetched event,
     Emitter<CatalogState> emit,
   ) async {
+    final shouldLoadBundle = state.shouldLoadBundle;
     emit(state.copyWith(catalogStatus: CatalogStatus.loadingProducts));
+
+    // Loading bundle
+    if (shouldLoadBundle) {
+      final isLoaded = await _loadBundle();
+      if (isLoaded) {
+        emit(
+          state.copyWith(
+            lastTimeFetched: Map<Category, DateTime>.fromIterable(
+              _categories,
+              value: (e) => DateTime.now(),
+            ),
+          ),
+        );
+      }
+    }
+
+    // Querying products from server or cache
     final productsRef = _getProductsRef();
     QuerySnapshot<Product> productSnapshot;
     final shouldLoadFromServer = _shouldLoadFromServer(event.category);

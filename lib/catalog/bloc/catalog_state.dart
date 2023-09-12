@@ -21,6 +21,8 @@ class CatalogState extends Equatable {
   final Category categorySelected;
   final List<Product> products;
 
+  bool get shouldLoadBundle => catalogStatus == CatalogStatus.initial;
+
   @override
   List<Object?> get props => [
         catalogStatus,
