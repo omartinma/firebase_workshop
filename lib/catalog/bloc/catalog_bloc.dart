@@ -10,22 +10,24 @@ import 'package:firebase_workshop/global/global.dart';
 part 'catalog_event.dart';
 part 'catalog_state.dart';
 
+const _categories = [
+  Category.all(),
+  Category.white(),
+  Category.red(),
+];
+
 class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
   CatalogBloc(this._firestore)
       : super(
           CatalogState(
-            categories: const [
-              Category.all(),
-              Category.white(),
-              Category.red(),
-            ],
+            categories: _categories,
             products: List.empty(),
-            categorySelected: const Category.all(),
-            lastTimeFetched: {
-              const Category.all(): DateTime(1),
-              const Category.white(): DateTime(1),
-              const Category.red(): DateTime(1),
-            },
+            categorySelected: _categories.first,
+            // We should keep this data in local storage
+            lastTimeFetched: Map<Category, DateTime>.fromIterable(
+              _categories,
+              value: (e) => DateTime(1),
+            ),
           ),
         ) {
     on<CatalogProductByCategoryFetched>(_productByCategoryFetched);
@@ -57,9 +59,9 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     QuerySnapshot<Product> productSnapshot;
     final shouldLoadFromServer = _shouldLoadFromServer(event.category);
     final options = GetOptions(
-      source: shouldLoadFromServer.$1 ? Source.server : Source.cache,
+      source: shouldLoadFromServer.$1 ? Source.serverAndCache : Source.cache,
     );
-    if (event.category.name == 'all') {
+    if (event.category == const Category.all()) {
       productSnapshot = await productsRef.get(options);
     } else {
       productSnapshot = await productsRef
