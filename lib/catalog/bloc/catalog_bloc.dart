@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
@@ -12,26 +14,24 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
   CatalogBloc(this._firestore)
       : super(
           CatalogState(
-            categories: List.empty(),
+            categories: const [
+              Category.all(),
+              Category.white(),
+              Category.red(),
+            ],
             products: List.empty(),
             categorySelected: const Category.all(),
+            lastTimeFetched: {
+              const Category.all(): DateTime(1),
+              const Category.white(): DateTime(1),
+              const Category.red(): DateTime(1),
+            },
           ),
         ) {
-    on<CatalogFetched>(_fetched);
-    on<CatalogCategorySelected>(_categorySelected);
-    on<CatalogCategoriesFetched>(_categoriesFetched);
     on<CatalogProductByCategoryFetched>(_productByCategoryFetched);
   }
 
   final FirebaseFirestore _firestore;
-
-  CollectionReference<Category> _getCategoriesRef() {
-    return _firestore.collection('categories').withConverter<Category>(
-          fromFirestore: (snapshot, options) =>
-              Category.fromMap(snapshot.data() ?? {}),
-          toFirestore: (value, options) => value.toMap(),
-        );
-  }
 
   CollectionReference<Product> _getProductsRef() {
     return _firestore.collection('products').withConverter<Product>(
@@ -41,62 +41,11 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
         );
   }
 
-// Example 1 fetching all at once
-  FutureOr<void> _fetched(
-    CatalogFetched event,
-    Emitter<CatalogState> emit,
-  ) async {
-    emit(state.copyWith(catalogStatus: CatalogStatus.loadingCategories));
-    final categoriesRef = _getCategoriesRef();
-    final productsRef = _getProductsRef();
-    final lastTimeDataFetched = state.lastTimeFetched ?? DateTime(1);
+  (bool, DateTime) _shouldLoadFromServer(Category category) {
+    final lastTimeFetched = state.lastTimeFetched[category];
     final now = DateTime.now();
-    final difference = now.difference(lastTimeDataFetched).inDays;
-    QuerySnapshot<Category> categoriesSnapshot;
-    QuerySnapshot<Product> productSnapshot;
-    if (difference >= 1) {
-      // Never fetched before -> we fetch from the server
-      categoriesSnapshot = await categoriesRef.get();
-      productSnapshot = await productsRef.get();
-    } else {
-      // Fetched less than a day ago -> we fetch from cache
-      categoriesSnapshot =
-          await categoriesRef.get(const GetOptions(source: Source.cache));
-      productSnapshot =
-          await productsRef.get(const GetOptions(source: Source.cache));
-    }
-    final categories = categoriesSnapshot.docs.map((e) => e.data()).toList();
-    final products = productSnapshot.docs.map((e) => e.data()).toList();
-
-    emit(
-      state.copyWith(
-        categories: categories,
-        products: products,
-        catalogStatus: CatalogStatus.success,
-        lastTimeFetched: now,
-      ),
-    );
-  }
-
-  FutureOr<void> _categorySelected(
-    CatalogCategorySelected event,
-    Emitter<CatalogState> emit,
-  ) {
-    emit(state.copyWith(categorySelected: event.category));
-  }
-
-  // Example 2 fetching products per category
-
-  FutureOr<void> _categoriesFetched(
-    CatalogCategoriesFetched event,
-    Emitter<CatalogState> emit,
-  ) async {
-    emit(state.copyWith(catalogStatus: CatalogStatus.loadingCategories));
-    final categoriesRef = _getCategoriesRef();
-    final categoriesSnapshot = await categoriesRef.get();
-    final categories = categoriesSnapshot.docs.map((e) => e.data()).toList();
-    emit(state.copyWith(categories: categories));
-    add(const CatalogProductByCategoryFetched(category: Category.all()));
+    final difference = now.difference(lastTimeFetched!).inDays;
+    return (difference >= 1, now);
   }
 
   FutureOr<void> _productByCategoryFetched(
@@ -106,19 +55,36 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     emit(state.copyWith(catalogStatus: CatalogStatus.loadingProducts));
     final productsRef = _getProductsRef();
     QuerySnapshot<Product> productSnapshot;
+    final shouldLoadFromServer = _shouldLoadFromServer(event.category);
+    final options = GetOptions(
+      source: shouldLoadFromServer.$1 ? Source.server : Source.cache,
+    );
     if (event.category.name == 'all') {
-      productSnapshot = await productsRef.get();
+      productSnapshot = await productsRef.get(options);
     } else {
       productSnapshot = await productsRef
           .where('categoryName', isEqualTo: event.category.name)
-          .get();
+          .get(options);
     }
     final products = productSnapshot.docs.map((e) => e.data()).toList();
+    Map<Category, DateTime> lastTimeFetched;
+    if (shouldLoadFromServer.$1) {
+      print('Loaded from server');
+      lastTimeFetched = {
+        ...state.lastTimeFetched,
+        event.category: shouldLoadFromServer.$2,
+      };
+    } else {
+      print('Loaded from cache');
+      lastTimeFetched = state.lastTimeFetched;
+    }
+
     emit(
       state.copyWith(
         products: products,
         catalogStatus: CatalogStatus.success,
         categorySelected: event.category,
+        lastTimeFetched: lastTimeFetched,
       ),
     );
   }

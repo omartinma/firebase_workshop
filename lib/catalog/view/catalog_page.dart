@@ -15,10 +15,7 @@ class CatalogPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => CatalogBloc(FirebaseFirestore.instance)
-        ..add(
-          //const CatalogFetched(),// 1- Fetching all at once
-          const CatalogCategoriesFetched(), // 2- Fetching by tab
-        ),
+        ..add(const CatalogProductByCategoryFetched(category: Category.all())),
       child: const CatalogView(),
     );
   }
@@ -32,14 +29,6 @@ class CatalogView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Wine Shop'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.read<CatalogBloc>().add(const CatalogFetched());
-            },
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
       ),
       body: BlocBuilder<CatalogBloc, CatalogState>(
         builder: (context, state) {
@@ -49,7 +38,7 @@ class CatalogView extends StatelessWidget {
           }
           final categories = state.categories;
           final categorySelected = state.categorySelected;
-          final productFiltered = state.productsFiltered;
+          final productFiltered = state.products;
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -113,14 +102,9 @@ class CategoriesFilter extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             child: InkWell(
               onTap: () {
-                context
-                    .read<CatalogBloc>()
-                    // .add(CatalogCategorySelected(category: category)); // 1- While fetching all at once
-                    .add(
-                      CatalogProductByCategoryFetched(
-                        category: category,
-                      ),
-                    ); // 2- While fetching by tab
+                context.read<CatalogBloc>().add(
+                      CatalogProductByCategoryFetched(category: category),
+                    );
               },
               child: Container(
                 height: 30,
