@@ -2,7 +2,6 @@ part of 'catalog_bloc.dart';
 
 enum CatalogStatus {
   initial,
-  loadingCategories,
   loadingProducts,
   success,
 }

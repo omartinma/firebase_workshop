@@ -32,13 +32,9 @@ class CatalogView extends StatelessWidget {
       ),
       body: BlocBuilder<CatalogBloc, CatalogState>(
         builder: (context, state) {
-          if (state.catalogStatus == CatalogStatus.initial ||
-              state.catalogStatus == CatalogStatus.loadingCategories) {
-            return const Center(child: CircularProgressIndicator());
-          }
           final categories = state.categories;
           final categorySelected = state.categorySelected;
-          final productFiltered = state.products;
+          final products = state.products;
           return CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -55,8 +51,8 @@ class CatalogView extends StatelessWidget {
                         child: CircularProgressIndicator(),
                       ),
                     );
-                  } else if (productFiltered.isNotEmpty) {
-                    return ProductsView(products: productFiltered);
+                  } else if (products.isNotEmpty) {
+                    return ProductsView(products: products);
                   } else {
                     return const SliverToBoxAdapter(
                       child: Text(
@@ -74,121 +70,6 @@ class CatalogView extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class CategoriesFilter extends StatelessWidget {
-  const CategoriesFilter({
-    required this.categories,
-    required this.categorySelected,
-    super.key,
-  });
-
-  final List<Category> categories;
-  final Category categorySelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = Theme.of(context).colorScheme.primary;
-    return SizedBox(
-      height: 60,
-      width: double.infinity,
-      child: ListView.builder(
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          return Padding(
-            padding: const EdgeInsets.all(8),
-            child: InkWell(
-              onTap: () {
-                context.read<CatalogBloc>().add(
-                      CatalogProductByCategoryFetched(category: category),
-                    );
-              },
-              child: Container(
-                height: 30,
-                width: 100,
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  borderRadius: const BorderRadius.all(Radius.circular(10)),
-                  border: Border.all(
-                    color: category == categorySelected
-                        ? Colors.amber
-                        : primaryColor,
-                    width: 3,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Center(
-                    child: Text(
-                      category.name,
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-        scrollDirection: Axis.horizontal,
-      ),
-    );
-  }
-}
-
-class ProductsView extends StatelessWidget {
-  const ProductsView({required this.products, super.key});
-
-  final List<Product> products;
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    return SliverList.builder(
-      itemCount: products.length,
-      itemBuilder: (context, index) {
-        final product = products[index];
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: Colors.grey.shade500,
-            ),
-            height: 100,
-            child: Row(
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.network(
-                      product.image,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      Text(
-                        product.name,
-                        style: textTheme.headlineSmall,
-                      ),
-                      Text(
-                        product.description,
-                        style: textTheme.bodyMedium,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }
