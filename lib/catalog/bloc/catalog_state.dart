@@ -35,16 +35,16 @@ class CatalogState extends Equatable {
   CatalogState copyWith({
     CatalogStatus? catalogStatus,
     List<Category>? categories,
+    Map<Category, DateTime>? lastTimeFetched,
     Category? categorySelected,
     List<Product>? products,
-    Map<Category, DateTime>? lastTimeFetched,
   }) {
     return CatalogState(
       catalogStatus: catalogStatus ?? this.catalogStatus,
       categories: categories ?? this.categories,
+      lastTimeFetched: lastTimeFetched ?? this.lastTimeFetched,
       categorySelected: categorySelected ?? this.categorySelected,
       products: products ?? this.products,
-      lastTimeFetched: lastTimeFetched ?? this.lastTimeFetched,
     );
   }
 }

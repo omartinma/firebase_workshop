@@ -27,7 +27,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
             // We should keep this data in local storage
             lastTimeFetched: Map<Category, DateTime>.fromIterable(
               _categories,
-              value: (e) => DateTime(1),
+              value: (_) => DateTime(1),
             ),
           ),
         ) {
@@ -39,7 +39,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
   CollectionReference<Product> _getProductsRef() {
     return _firestore.collection('products').withConverter<Product>(
           fromFirestore: (snapshot, options) =>
-              Product.fromMap(snapshot.data() ?? {}),
+              Product.fromMap(map: snapshot.data() ?? {}, id: snapshot.id),
           toFirestore: (value, options) => value.toMap(),
         );
   }

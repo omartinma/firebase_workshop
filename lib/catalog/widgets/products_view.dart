@@ -1,5 +1,7 @@
 import 'package:firebase_workshop/global/global.dart';
+import 'package:firebase_workshop/wishlist/wishlist.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProductsView extends StatelessWidget {
   const ProductsView({required this.products, super.key});
@@ -43,6 +45,29 @@ class ProductsView extends StatelessWidget {
                       Text(
                         product.description,
                         style: textTheme.bodyMedium,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          BlocBuilder<WishlistBloc, WishlistState>(
+                            builder: (context, state) {
+                              return IconButton(
+                                onPressed: () {
+                                  context.read<WishlistBloc>().add(
+                                        WishlistRequested(
+                                          product: product,
+                                        ),
+                                      );
+                                },
+                                icon: Icon(
+                                  state.products.contains(product)
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),

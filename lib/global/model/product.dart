@@ -8,16 +8,19 @@ class Product extends Equatable {
     required this.categoryName,
     required this.image,
     required this.description,
+    required this.id,
   });
 
-  factory Product.fromJson(String source) =>
-      Product.fromMap(json.decode(source) as Map<String, dynamic>);
-  factory Product.fromMap(Map<String, dynamic> map) {
+  factory Product.fromMap({
+    required Map<String, dynamic> map,
+    required String id,
+  }) {
     return Product(
       name: map['name'] as String,
       categoryName: map['categoryName'] as String,
       image: map['image'] as String,
       description: map['description'] as String,
+      id: id,
     );
   }
 
@@ -25,6 +28,7 @@ class Product extends Equatable {
   final String categoryName;
   final String image;
   final String description;
+  final String id;
 
   Map<String, dynamic> toMap() {
     return {
@@ -38,5 +42,5 @@ class Product extends Equatable {
   String toJson() => json.encode(toMap());
 
   @override
-  List<Object?> get props => [name, categoryName, image, description];
+  List<Object?> get props => [name, categoryName, image, description, id];
 }
