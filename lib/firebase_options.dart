@@ -69,7 +69,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1067961968697',
     projectId: 'fir-workshop-8801d',
     storageBucket: 'fir-workshop-8801d.appspot.com',
-    iosClientId: '1067961968697-hdapv6t87rfk00hvf1b2csapubr9h957.apps.googleusercontent.com',
+    iosClientId:
+        '1067961968697-hdapv6t87rfk00hvf1b2csapubr9h957.apps.googleusercontent.com',
     iosBundleId: 'com.example.firebase-workshop',
   );
 }
