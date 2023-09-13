@@ -53,23 +53,30 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
     Emitter<WishlistState> emit,
   ) async {
     emit(state.copyWith(status: Status.adding));
-    final userId = _firebaseAuth.currentUser!.uid;
-    final doc = await _firestore
-        .collection('wishlist/$userId/products')
-        .doc(event.product.id)
-        .get();
-    if (doc.exists) {
-      await _firestore
+    try {
+      final userId = _firebaseAuth.currentUser!.uid;
+      final doc = await _firestore
           .collection('wishlist/$userId/products')
           .doc(event.product.id)
-          .delete();
-      emit(state.copyWith(status: Status.deleted));
-    } else {
-      await _firestore
-          .collection('wishlist/$userId/products')
-          .doc(event.product.id)
-          .set(event.product.toMap());
-      emit(state.copyWith(status: Status.added));
+          .get();
+      if (doc.exists) {
+        await _firestore
+            .collection('wishlist/$userId/products')
+            .doc(event.product.id)
+            .delete();
+        emit(state.copyWith(status: Status.deleted));
+      } else {
+        await _firestore
+            .collection('wishlist/$userId/products')
+            .doc(event.product.id)
+            .set(event.product.toMap());
+        emit(state.copyWith(status: Status.added));
+      }
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        return emit(state.copyWith(status: Status.permissionError));
+      }
+      return emit(state.copyWith(status: Status.unknownError));
     }
   }
 }

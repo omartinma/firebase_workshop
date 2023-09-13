@@ -44,18 +44,20 @@ class CatalogView extends StatelessWidget {
     return BlocListener<WishlistBloc, WishlistState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
+        String? message;
         if (state.status == Status.added) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(content: Text('Added to wishlist')),
-            );
+          message = 'Added to wishlist';
         } else if (state.status == Status.deleted) {
+          message = 'Deleted from wishlist';
+        } else if (state.status == Status.permissionError) {
+          message = 'Error, you dont have permission';
+        } else if (state.status == Status.unknownError) {
+          message = 'Unexpected error';
+        }
+        if (message != null) {
           ScaffoldMessenger.of(context)
             ..hideCurrentSnackBar()
-            ..showSnackBar(
-              const SnackBar(content: Text('Deleted from wishlist')),
-            );
+            ..showSnackBar(SnackBar(content: Text(message)));
         }
       },
       child: Scaffold(

@@ -1,6 +1,6 @@
 part of 'wishlist_bloc.dart';
 
-enum Status { initial, adding, added, deleted }
+enum Status { initial, adding, added, deleted, permissionError, unknownError }
 
 class WishlistState extends Equatable {
   const WishlistState({
