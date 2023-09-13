@@ -73,8 +73,9 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
   ) async {
     final shouldLoadBundle = state.shouldLoadBundle;
     emit(state.copyWith(catalogStatus: CatalogStatus.loadingProducts));
+    final productsRef = _getProductsRef();
 
-    // Loading bundle
+    // Optimization 2: Using bundle
     if (shouldLoadBundle) {
       final isLoaded = await _loadBundle();
       if (isLoaded) {
@@ -89,13 +90,14 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
       }
     }
 
-    // Querying products from server or cache
-    final productsRef = _getProductsRef();
+    // Optimization 1: Querying products from server or cache
     QuerySnapshot<Product> productSnapshot;
     final shouldLoadFromServer = _shouldLoadFromServer(event.category);
     final options = GetOptions(
       source: shouldLoadFromServer.$1 ? Source.serverAndCache : Source.cache,
     );
+
+    // Fetch products based on category selected
     if (event.category == const Category.all()) {
       productSnapshot = await productsRef.get(options);
     } else {
@@ -105,6 +107,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     }
     final products = productSnapshot.docs.map((e) => e.data()).toList();
     Map<Category, DateTime> lastTimeFetched;
+
     if (shouldLoadFromServer.$1) {
       print('Loaded from server');
       lastTimeFetched = {
