@@ -61,6 +61,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
   }
 
   (bool, DateTime) _shouldLoadFromServer(Category category) {
+    // We refresh the cache once a day
     final lastTimeFetched = state.lastTimeFetched[category];
     final now = DateTime.now();
     final difference = now.difference(lastTimeFetched!).inDays;
@@ -108,6 +109,7 @@ class CatalogBloc extends Bloc<CatalogEvent, CatalogState> {
     final products = productSnapshot.docs.map((e) => e.data()).toList();
     Map<Category, DateTime> lastTimeFetched;
 
+    // We update lastTimeFetched if we are loading from server
     if (shouldLoadFromServer.$1) {
       print('Loaded from server');
       lastTimeFetched = {
